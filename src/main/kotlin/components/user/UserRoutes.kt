@@ -1,40 +1,23 @@
 package components.user
 
 import io.ktor.application.call
-import io.ktor.http.ContentType
 import io.ktor.http.HttpStatusCode
-import io.ktor.response.respondText
 import io.ktor.response.respond
 import io.ktor.routing.Route
 import io.ktor.routing.route
 import io.ktor.routing.get
 import io.ktor.routing.post
-import mongodb.MongoDb
 
 fun Route.userRoutes() {
+    val userRepoImpl = UserRepoImpl()
     route("/users") {
 
         get("") {
-            call.respondText("all users", ContentType.Text.Html)
+            call.respond(HttpStatusCode.OK, UserService(userRepoImpl).list())
         }
 
-        get("/list") {
-            val users = MongoDb.getDatabase()
-                    .getCollection<User>("users2")
-                    .find()
-                    .toList()
-            call.respond(HttpStatusCode.OK, users)
-        }
-
-        post<UserRegisterRequest>("/register") { request ->
-            val user = User(
-                    name = request.name,
-                    email = request.email
-            )
-            MongoDb.getDatabase()
-                    .getCollection<User>("users2")
-                    .insertOne(user)
-            call.respond(HttpStatusCode.OK)
+        post<UserRegisterRequest>("register") { request ->
+            call.respond(HttpStatusCode.OK, UserService(userRepoImpl).register(request))
         }
 
     }
