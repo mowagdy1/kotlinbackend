@@ -9,17 +9,9 @@ import io.ktor.routing.Route
 import io.ktor.routing.route
 import io.ktor.routing.get
 import io.ktor.routing.post
-
-import org.litote.kmongo.reactivestreams.*  //NEEDED! import KMongo reactivestreams extensions
-import org.litote.kmongo.coroutine.* //NEEDED! import KMongo coroutine extensions
-
-
-val client = KMongo.createClient().coroutine //use coroutine extension
-//val database = client.getDatabase("test") //normal java driver usage
-
+import mongodb.MongoDb
 
 fun Route.userRoutes() {
-
     route("/users") {
 
         get("") {
@@ -27,24 +19,23 @@ fun Route.userRoutes() {
         }
 
         get("/list") {
-            val users = client.getDatabase("sample_app")
+            val users = MongoDb.getDatabase()
                     .getCollection<User>("users2")
                     .find()
                     .toList()
             call.respond(HttpStatusCode.OK, users)
         }
 
-        post<RegisterRequest>("/register") { request ->
+        post<UserRegisterRequest>("/register") { request ->
             val user = User(
-                    userName = request.userName,
-                    password = request.password
+                    name = request.name,
+                    email = request.email
             )
-            client.getDatabase("sample_app")
+            MongoDb.getDatabase()
                     .getCollection<User>("users2")
                     .insertOne(user)
             call.respond(HttpStatusCode.OK)
         }
 
     }
-
 }
