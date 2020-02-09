@@ -1,4 +1,4 @@
-package components.user
+package modules.user
 
 data class User(
         val _id: String = "",

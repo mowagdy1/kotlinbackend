@@ -1,4 +1,4 @@
-package components.user
+package modules.user
 
 data class UserRegisterRequest(
         val name: String,

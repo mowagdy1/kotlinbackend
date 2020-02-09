@@ -1,4 +1,4 @@
-package components.user
+package modules.user
 
 class UserService(private val repo: UserRepoInterface) {
 

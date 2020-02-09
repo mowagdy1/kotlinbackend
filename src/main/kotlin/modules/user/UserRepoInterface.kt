@@ -1,4 +1,4 @@
-package components.user
+package modules.user
 
 interface UserRepoInterface {
     suspend fun list(): List<User>

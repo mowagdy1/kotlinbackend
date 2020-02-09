@@ -1,4 +1,4 @@
-package components.user
+package modules.user
 
 import mongodb.MongoDb
 import java.util.*
