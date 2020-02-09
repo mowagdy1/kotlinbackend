@@ -6,3 +6,9 @@ data class UserListingResponse(
         val email: String
 )
 
+data class SingleUserResponse(
+        val _id: String,
+        val name: String,
+        val email: String
+)
+

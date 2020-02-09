@@ -1,6 +1,8 @@
 package modules.user
 
+import commons.NotFoundException
 import mongodb.MongoDb
+import org.litote.kmongo.eq
 import java.util.*
 
 const val USERS_COLLECTION = "users2"
@@ -11,7 +13,12 @@ class UserRepoImpl : UserRepoInterface {
     override suspend fun list(): List<User> = userCollection.find().toList()
 
     override suspend fun findById(_id: String): User {
-        return User("3333", "Mooo", "email")
+        val user = userCollection.findOne(User::_id eq _id)
+        if (user != null) {
+            return user
+        } else {
+            throw NotFoundException()
+        }
     }
 
     override suspend fun insert(name: String, email: String) {

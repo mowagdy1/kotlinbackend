@@ -1,8 +1,9 @@
 package ktor
 
 import com.fasterxml.jackson.databind.SerializationFeature
-import commons.ForbiddenException
+import commons.*
 import commons.BadRequestException
+import commons.NotFoundException
 import io.ktor.application.*
 import io.ktor.features.*
 import io.ktor.http.HttpStatusCode
@@ -28,15 +29,24 @@ fun Application.module() {
     }
 }
 
-fun main(args: Array<String>) {
+fun main() {
     embeddedServer(Netty, 8080, watchPaths = listOf("MainAppKt"), module = Application::module).start()
 }
 
 fun StatusPages.Configuration.registerExceptions() {
     exception<BadRequestException> { cause ->
+        call.respond(HttpStatusCode.BadRequest)
+    }
+    exception<UnauthorizedException> { cause ->
         call.respond(HttpStatusCode.Unauthorized)
     }
     exception<ForbiddenException> { cause ->
         call.respond(HttpStatusCode.Forbidden)
+    }
+    exception<NotFoundException> { cause ->
+        call.respond(HttpStatusCode.NotFound)
+    }
+    exception<ConflictException> { cause ->
+        call.respond(HttpStatusCode.Conflict)
     }
 }

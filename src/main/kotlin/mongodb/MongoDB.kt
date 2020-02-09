@@ -8,29 +8,30 @@ import org.litote.kmongo.reactivestreams.KMongo
 const val DATABASE_NAME: String = "sample_app"
 
 object MongoDb {
-    private var kmongo: CoroutineClient? = null
-    private var kdatabase: CoroutineDatabase? = null
+    private var client: CoroutineClient? = null
+    private var database: CoroutineDatabase? = null
 
     fun getDatabase(): CoroutineDatabase {
-        if (kdatabase == null) {
+        if (database == null) {
             connect()
             database()
         }
-        return kdatabase!!
+        return database!!
     }
 
     private fun connect() {
         try {
-            kmongo = KMongo.createClient().coroutine // "createClient" without parameters refers to the default => (host=localhost & port=27017)
+            //"createClient" without parameters refers to the default => (host=localhost & port=27017)
+            client = KMongo.createClient().coroutine
             println("MongoClient connected")
 
         } catch (e: Exception) {
-            kmongo?.close()
+            client?.close()
             println("MongoClient failed to connect: $e")
         }
     }
 
     private fun database() {
-        kdatabase = kmongo?.getDatabase(DATABASE_NAME)
+        database = client?.getDatabase(DATABASE_NAME)
     }
 }
