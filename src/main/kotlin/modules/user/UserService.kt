@@ -13,4 +13,7 @@ class UserService(private val repo: UserRepoInterface) {
         repo.insert(name = request.name, email = request.email)
     }
 
+    suspend fun update(request: UserUpdateRequest, _id: String) {
+        repo.update(_id = _id, name = request.name, email = request.email)
+    }
 }

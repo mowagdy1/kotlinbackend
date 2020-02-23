@@ -25,8 +25,8 @@ class UserRepoImpl : UserRepoInterface {
         userCollection.insertOne(User(_id = UUID.randomUUID().toString(), name = name, email = email))
     }
 
-    override suspend fun update(_id: String, name: String, address: String) {
-
+    override suspend fun update(_id: String, name: String, email: String) {
+        userCollection.replaceOneById(_id, User(name = name, email = email))
     }
 
     override suspend fun delete(_id: String) {

@@ -7,7 +7,7 @@ interface UserRepoInterface {
 
     suspend fun insert(name: String, email: String)
 
-    suspend fun update(_id: String, name: String, address: String)
+    suspend fun update(_id: String, name: String, email: String)
 
     suspend fun delete(_id: String)
 }
