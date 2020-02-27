@@ -24,8 +24,11 @@ fun Route.appRoutes() {
             else throw BadRequestException()
         }
 
-        post<UserRegisterRequest>("register") { request ->
-            call.respond(HttpStatusCode.OK, UserService(UserRepoImpl()).register(request))
+        post("register") {
+
+            val userRegisterRequest = call.receive<UserRegisterRequest>()
+
+            call.respond(HttpStatusCode.OK, UserService(UserRepoImpl()).register(userRegisterRequest))
         }
 
         put("/{id}") {
@@ -37,5 +40,6 @@ fun Route.appRoutes() {
                 call.respond(HttpStatusCode.OK, UserService(UserRepoImpl()).update(userUpdateRequest, id))
             else throw BadRequestException()
         }
+
     }
 }
