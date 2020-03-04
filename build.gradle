@@ -42,6 +42,8 @@ dependencies {
     compile "ch.qos.logback:logback-classic:1.2.3"
     compile 'org.litote.kmongo:kmongo-coroutine:3.12.0'
     compile 'io.jsonwebtoken:jjwt-api:0.11.0'
+    runtime 'io.jsonwebtoken:jjwt-impl:0.11.0',
+            'io.jsonwebtoken:jjwt-jackson:0.11.0'
 
     testCompile group: 'junit', name: 'junit', version: '4.12'
 }

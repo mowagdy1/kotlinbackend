@@ -1,8 +1,11 @@
 package ktor
 
+import commons.AuthTokenManagerJWT
 import commons.BadRequestException
+import commons.TokenParams
 import io.ktor.application.call
 import io.ktor.http.HttpStatusCode
+import io.ktor.request.authorization
 import io.ktor.request.receive
 import io.ktor.response.respond
 import io.ktor.routing.*
@@ -42,4 +45,40 @@ fun Route.appRoutes() {
         }
 
     }
+
+
+    post("validate-token") {
+
+        val authHeader = call.request.authorization()
+
+        if (authHeader is String) {
+
+            val parsed = parseAuthorizationHeaderToToken(authHeader)
+
+            val authTokenManagerJWT = AuthTokenManagerJWT()
+
+            val parsedToken=authTokenManagerJWT.parseToken(parsed)
+
+
+            call.respond(HttpStatusCode.OK, parsedToken)
+
+        }
+
+        call.respond(HttpStatusCode.OK, "mfeesh")
+    }
+
+    get("get-token") {
+        val authTokenManagerJWT = AuthTokenManagerJWT()
+        val token = authTokenManagerJWT.generateToken(TokenParams("mo", listOf("Customer")))
+        call.respond(HttpStatusCode.OK, token)
+    }
+
+
+}
+
+private fun parseAuthorizationHeaderToToken(authHeader: String): String {
+    if (authHeader.isEmpty() || !authHeader.startsWith("Bearer ")) {
+        return ""
+    }
+    return authHeader.substring(7, authHeader.length)
 }
