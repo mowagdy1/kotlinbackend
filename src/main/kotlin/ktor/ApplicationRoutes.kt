@@ -4,21 +4,28 @@ import io.ktor.http.HttpMethod
 import io.ktor.routing.Route
 import io.ktor.routing.route
 
-class ApplicationRoutes {
+object ApplicationRoutes {
 
+    val routes: MutableList<SingleRoute<Any, Any>> = mutableListOf()
 
-     private val routes: MutableList<SingleRoute<Any, Any>> = mutableListOf()
-
-
-    fun registerRoute(route: SingleRoute<Any,Any>) {
+    fun registerRoute(route: SingleRoute<Any, Any>) {
         routes.add(route)
     }
-
-
 }
 
 
 fun Route.applicationRoutes() {
+
+    ApplicationRoutes.routes.forEach {
+        route(it.path, it.method) {
+
+            if (it.auth) {
+
+            }
+
+
+        }
+    }
 
 
 }
@@ -26,19 +33,21 @@ fun Route.applicationRoutes() {
 
 fun ApplicationRoutes.allRoutes() {
 
-    registerRoute(route = SingleRoute(method = HttpMethod.Get,route = "",routeRequest = Test1Request(),routeResponse = Test1Response()))
-    registerRoute(route = SingleRoute(method = HttpMethod.Get,route = "",routeRequest = BtnganRequest(),routeResponse = BtnganResponse()))
+    registerRoute(route = SingleRoute(method = HttpMethod.Get, path = "", routeRequest = Test1Request(), routeResponse = Test1Response()))
+    registerRoute(route = SingleRoute(method = HttpMethod.Get, path = "", routeRequest = BtnganRequest(), routeResponse = BtnganResponse()))
 
 
 }
 
 
 data class SingleRoute<RouteRequest : Any, RouteResponse : Any>(val method: HttpMethod,
-                                                                val route: String,
-                                                                val auth: Boolean = false,
-                                                                val roles: List<String> = listOf(),
+                                                                val path: String,
                                                                 val routeRequest: RouteRequest,
-                                                                val routeResponse: RouteResponse)
+                                                                val routeResponse: RouteResponse,
+                                                                val auth: Boolean = false,
+                                                                val roles: List<String> = listOf())
+
+interface Service {}
 
 // for testing
 data class Test1Request(val whatever: String = "")
