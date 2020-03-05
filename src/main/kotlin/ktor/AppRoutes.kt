@@ -4,8 +4,10 @@ import commons.AuthTokenManagerJWT
 import commons.BadRequestException
 import commons.TokenParams
 import io.ktor.application.call
+import io.ktor.http.HttpHeaders
+import io.ktor.http.HttpMethod
 import io.ktor.http.HttpStatusCode
-import io.ktor.request.authorization
+import io.ktor.request.header
 import io.ktor.request.receive
 import io.ktor.response.respond
 import io.ktor.routing.*
@@ -47,9 +49,10 @@ fun Route.appRoutes() {
     }
 
 
+
     post("validate-token") {
 
-        val authHeader = call.request.authorization()
+        val authHeader = call.request.header(HttpHeaders.Authorization)
 
         if (authHeader is String) {
 
@@ -57,7 +60,7 @@ fun Route.appRoutes() {
 
             val authTokenManagerJWT = AuthTokenManagerJWT()
 
-            val parsedToken=authTokenManagerJWT.parseToken(parsed)
+            val parsedToken = authTokenManagerJWT.parseToken(parsed)
 
 
             call.respond(HttpStatusCode.OK, parsedToken)
