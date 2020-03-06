@@ -1,8 +1,6 @@
 package modules.user
 
-import ktor.Service
-
-class UserService(private val repo: UserRepoInterface) : Service {
+class UserService(private val repo: UserRepoInterface) {
 
     suspend fun list(): List<UserListingResponse> = repo.list().map { user -> UserListingResponse(user._id, user.name, user.email) }
 
