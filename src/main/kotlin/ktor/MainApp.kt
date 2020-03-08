@@ -12,6 +12,7 @@ import io.ktor.response.respond
 import io.ktor.routing.*
 import io.ktor.server.engine.*
 import io.ktor.server.netty.*
+import kotlinx.coroutines.runBlocking
 
 fun Application.module() {
     install(ContentNegotiation) {
@@ -26,6 +27,11 @@ fun Application.module() {
     }
     routing {
         appRoutes()
+
+        runBlocking {
+            ApplicationRoutes.allRoutes()
+        }
+
         applicationRoutes()
     }
 }

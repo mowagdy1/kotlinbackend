@@ -1,7 +1,6 @@
 package ktor
 
 import commons.AuthTokenManagerJWT
-import commons.TokenParams
 import io.ktor.application.ApplicationCall
 import io.ktor.application.call
 import io.ktor.http.HttpHeaders
@@ -11,14 +10,14 @@ import io.ktor.request.header
 import io.ktor.response.respond
 import io.ktor.routing.*
 import io.ktor.util.pipeline.PipelineContext
-import modules.user.UserRepoImpl
-import modules.user.UserService
 
 object ApplicationRoutes {
-    val endpoints: MutableList<SingleEndpoint<Any, Any>> = mutableListOf()
-    fun registerRoute(endpoint: SingleEndpoint<Any, Any>) {
+    val endpoints: MutableList<SingleEndpoint<*, *>> = mutableListOf()
+
+    fun registerRoute(endpoint: SingleEndpoint<*, *>) {
         endpoints.add(endpoint)
     }
+
 }
 
 
@@ -40,70 +39,60 @@ fun Route.applicationRoutes() {
     }
 }
 
-private suspend fun PipelineContext<Unit, ApplicationCall>.handlingRequest(endpoint: SingleEndpoint<Any, Any>) {
+private suspend fun PipelineContext<Unit, ApplicationCall>.handlingRequest(endpoint: SingleEndpoint<*, *>) {
     if (endpoint.auth) {
         val authHeader = call.request.header(HttpHeaders.Authorization)
-        if (authHeader is String && authHeader !== "") {
-            endpoint.parsedToken = AuthTokenManagerJWT().parseToken(parseAuthorizationHeaderToToken(authHeader))
-            call.respond(HttpStatusCode.OK, endpoint.execute())
+        if (authHeader is String && authHeader.isNotEmpty()) {
+            val parsedToken = AuthTokenManagerJWT().parseToken(parseAuthorizationHeaderToToken(authHeader))
+
+            var eligibleEndpoint = false
+            parsedToken.roles.forEach { role ->
+                if (endpoint.roles.contains(role)) {
+                    eligibleEndpoint = true
+                }
+            }
+            if (!eligibleEndpoint) {
+                call.respond(HttpStatusCode.Forbidden, "Not have a permission")
+            }
+
+            call.respond(HttpStatusCode.OK, endpoint.handler.execute()!!)
         } else {
             call.respond(HttpStatusCode.Unauthorized, "auth is required")
         }
     }
-    call.respond(HttpStatusCode.OK, endpoint.handler.execute())
+    call.respond(HttpStatusCode.OK, endpoint.handler.execute()!!)
 }
 
 
 suspend fun ApplicationRoutes.allRoutes() {
 
-    registerRoute(SingleEndpoint(HttpMethod.Get, "", ArticleListingHandler()))
-
-
-    //registerRoute(SingleEndpoint(HttpMethod.Get, "", BtnganRequest(), BtnganResponse()))
-
+    registerRoute(SingleEndpoint(HttpMethod.Get, "p", ArticleListingHandler(BanyanRequest())))
 
 }
 
 
-open class SingleEndpoint<RouteRequest : Any, RouteResponse : Any>(val method: HttpMethod,
-                                                                   val route: String,
-                                                                   val handler: BaseHandler,
-                                                                //val routeRequest: RouteRequest,
-                                                                //val routeResponse: RouteResponse,
-                                                                   val auth: Boolean = false,
-                                                                   val roles: List<String> = listOf()) {
-
-    var parsedToken: TokenParams = TokenParams.blank()
-
-    open fun execute() {}
+open class SingleEndpoint<RouteRequest, RouteResponse>(val method: HttpMethod,
+                                                       val route: String,
+                                                       val handler: BaseHandler<RouteRequest, RouteResponse>,
+                                                       val auth: Boolean = false,
+                                                       val roles: List<String> = listOf()) {
 }
 
 
-//class ArticleListingEndpoint : SingleEndpoint<BtnganRequest, BtnganResponse>(HttpMethod.Get,
-//        "articles") {
-//    override fun execute() {
-//        //
-//    }
-//}
+class ArticleListingHandler(val request: BanyanRequest) : BaseHandler<BanyanRequest, BanyanResponse> {
 
-class ArticleListingHandler : BaseHandler {
-    override fun execute() {
-        //
+    override fun execute(): BanyanResponse {
+        return BanyanResponse("")
     }
 }
 
-interface BaseHandler {
-    fun execute()
+interface BaseHandler<RouteRequest, RouteResponse> {
+    fun execute(): RouteResponse
 }
 
 
-// for testing
-
-data class Test1Request(val whatever: String = "")
-data class Test1Response(val whatever: String = "")
-
-data class BtnganRequest(val whatever: String = "")
-data class BtnganResponse(val whatever: String = "")
+data class BanyanRequest(val whatever: String = "")
+data class BanyanResponse(val whatever: String = "")
 
 
 private fun parseAuthorizationHeaderToToken(authHeader: String): String {
