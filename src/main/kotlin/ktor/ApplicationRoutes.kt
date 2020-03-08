@@ -71,6 +71,7 @@ suspend fun ApplicationRoutes.allRoutes() {
 }
 
 
+
 open class SingleEndpoint<RouteRequest, RouteResponse>(val method: HttpMethod,
                                                        val route: String,
                                                        val handler: BaseHandler<RouteRequest, RouteResponse>,
