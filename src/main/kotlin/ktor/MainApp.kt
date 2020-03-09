@@ -26,7 +26,8 @@ fun Application.module() {
         registerExceptions()
     }
     routing {
-        appRoutes()
+
+        //appRoutes()
 
         runBlocking {
             ApplicationRoutes.allRoutes()

@@ -1,5 +1,7 @@
 package modules.user
 
+class EmptyRequest()
+
 data class UserRegisterRequest(
         val name: String = "",
         val email: String = ""

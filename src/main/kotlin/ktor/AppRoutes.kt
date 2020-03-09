@@ -18,9 +18,9 @@ import modules.user.UserUpdateRequest
 
 fun Route.appRoutes() {
     route("/users") {
-        get("") {
-            call.respond(HttpStatusCode.OK, UserService(UserRepoImpl()).list())
-        }
+//        get("") {
+//            call.respond(HttpStatusCode.OK, UserService(UserRepoImpl()).list())
+//        }
 
         get("/{id}") {
             val id: String? = call.parameters["id"]

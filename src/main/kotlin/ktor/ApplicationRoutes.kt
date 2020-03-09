@@ -10,6 +10,9 @@ import io.ktor.request.header
 import io.ktor.response.respond
 import io.ktor.routing.*
 import io.ktor.util.pipeline.PipelineContext
+import modules.user.EmptyRequest
+import modules.user.UserListingHandler
+import modules.user.UserRepoImpl
 
 object ApplicationRoutes {
     val endpoints: MutableList<SingleEndpoint<*, *>> = mutableListOf()
@@ -68,8 +71,9 @@ suspend fun ApplicationRoutes.allRoutes() {
 
     registerRoute(SingleEndpoint(HttpMethod.Get, "p", ArticleListingHandler(BanyanRequest())))
 
-}
+    registerRoute(SingleEndpoint(HttpMethod.Get, "users", UserListingHandler(EmptyRequest(), UserRepoImpl())))
 
+}
 
 
 open class SingleEndpoint<RouteRequest, RouteResponse>(val method: HttpMethod,
@@ -82,13 +86,13 @@ open class SingleEndpoint<RouteRequest, RouteResponse>(val method: HttpMethod,
 
 class ArticleListingHandler(val request: BanyanRequest) : BaseHandler<BanyanRequest, BanyanResponse> {
 
-    override fun execute(): BanyanResponse {
+    override suspend fun execute(): BanyanResponse {
         return BanyanResponse("")
     }
 }
 
 interface BaseHandler<RouteRequest, RouteResponse> {
-    fun execute(): RouteResponse
+    suspend fun execute(): RouteResponse
 }
 
 
