@@ -1,56 +1,61 @@
 package ktor
 
+import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import commons.AuthTokenManagerJWT
 import io.ktor.application.ApplicationCall
 import io.ktor.application.call
+import io.ktor.http.ContentType
 import io.ktor.http.HttpHeaders
 import io.ktor.http.HttpMethod
 import io.ktor.http.HttpStatusCode
 import io.ktor.request.header
+import io.ktor.request.receive
 import io.ktor.response.respond
+import io.ktor.response.respondText
 import io.ktor.routing.*
 import io.ktor.util.pipeline.PipelineContext
-import modules.user.EmptyRequest
-import modules.user.UserListingHandler
-import modules.user.UserRepoImpl
+import modules.articles.ArticleListingProcessor
+import modules.articles.ArticleRepoImpl
+import modules.user.*
 
 object ApplicationRoutes {
-    val endpoints: MutableList<SingleEndpoint<*, *>> = mutableListOf()
+    val routes: MutableList<SingleRoute> = mutableListOf()
 
-    fun registerRoute(endpoint: SingleEndpoint<*, *>) {
-        endpoints.add(endpoint)
+    fun registerRoute(endpoint: SingleRoute) {
+        routes.add(endpoint)
     }
-
 }
 
 
 fun Route.applicationRoutes() {
-    ApplicationRoutes.endpoints.forEach { endpoint ->
-        route(endpoint.route) {
+    ApplicationRoutes.routes.forEach { route ->
+        route(route.uri) {
 
-            when {
-                endpoint.method == HttpMethod.Get -> get { handlingRequest(endpoint) }
-                endpoint.method == HttpMethod.Post -> post { handlingRequest(endpoint) }
-                endpoint.method == HttpMethod.Put -> put { handlingRequest(endpoint) }
+            when (route.method) {
+                HttpMethod.Get -> get { handlingRequest(route, this) }
+                HttpMethod.Post -> post { handlingRequest(route, this) }
+                HttpMethod.Put -> put { handlingRequest(route, this) }
             }
 
             get {
-                call.respond(HttpStatusCode.BadRequest, "Wrong endpoint method")
+                call.respond(HttpStatusCode.BadRequest, "Wrong route method")
             }
 
         }
     }
 }
 
-private suspend fun PipelineContext<Unit, ApplicationCall>.handlingRequest(endpoint: SingleEndpoint<*, *>) {
-    if (endpoint.auth) {
+
+private suspend fun PipelineContext<Unit, ApplicationCall>.handlingRequest(route: SingleRoute, ctx: PipelineContext<Unit, ApplicationCall>) {
+
+    if (route.auth) {
         val authHeader = call.request.header(HttpHeaders.Authorization)
         if (authHeader is String && authHeader.isNotEmpty()) {
             val parsedToken = AuthTokenManagerJWT().parseToken(parseAuthorizationHeaderToToken(authHeader))
 
             var eligibleEndpoint = false
             parsedToken.roles.forEach { role ->
-                if (endpoint.roles.contains(role)) {
+                if (route.roles.contains(role)) {
                     eligibleEndpoint = true
                 }
             }
@@ -58,41 +63,87 @@ private suspend fun PipelineContext<Unit, ApplicationCall>.handlingRequest(endpo
                 call.respond(HttpStatusCode.Forbidden, "Not have a permission")
             }
 
-            call.respond(HttpStatusCode.OK, endpoint.handler.execute()!!)
+            //ctx.call.respondText("", ContentType.Application.Json, HttpStatusCode.OK)
+            //call.respond(HttpStatusCode.OK, route.handler.handle(ctx))
+            //route.handler.handle(ctx)
         } else {
             call.respond(HttpStatusCode.Unauthorized, "auth is required")
         }
     }
-    call.respond(HttpStatusCode.OK, endpoint.handler.execute()!!)
+
+    //call.respond(HttpStatusCode.OK, route.handler.execute()!!)
+    route.handler.handle(ctx)
 }
 
 
-suspend fun ApplicationRoutes.allRoutes() {
+fun ApplicationRoutes.allRoutes() {
 
-    registerRoute(SingleEndpoint(HttpMethod.Get, "p", ArticleListingHandler(BanyanRequest())))
+    registerRoute(SingleRoute(HttpMethod.Get, "p", ArticleListingHandler()))
 
-    registerRoute(SingleEndpoint(HttpMethod.Get, "users", UserListingHandler(EmptyRequest(), UserRepoImpl())))
+    registerRoute(SingleRoute(HttpMethod.Get, "users", UserListingHandler()))
+    registerRoute(SingleRoute(HttpMethod.Post, "users/register", UserRegisteringHandler()))
 
 }
 
-
-open class SingleEndpoint<RouteRequest, RouteResponse>(val method: HttpMethod,
-                                                       val route: String,
-                                                       val handler: BaseHandler<RouteRequest, RouteResponse>,
-                                                       val auth: Boolean = false,
-                                                       val roles: List<String> = listOf()) {
+interface JsonMapper {
+    fun <T> toJson(obj: T): String
 }
 
+class JsonMapperImpl : JsonMapper {
+    private val mapper = jacksonObjectMapper()
+    override fun <T> toJson(obj: T): String =
+            mapper.writeValueAsString(obj)
+}
 
-class ArticleListingHandler(val request: BanyanRequest) : BaseHandler<BanyanRequest, BanyanResponse> {
+interface BaseRouteHandler {
+    suspend fun handle(ctx: PipelineContext<Unit, ApplicationCall>)
+}
 
-    override suspend fun execute(): BanyanResponse {
-        return BanyanResponse("")
+open class SingleRoute(val method: HttpMethod,
+                       val uri: String,
+                       val handler: BaseRouteHandler,
+                       val auth: Boolean = false,
+                       val roles: List<String> = listOf())
+
+abstract class BaseApiHandler<Request, Response> : BaseRouteHandler {
+    override suspend fun handle(ctx: PipelineContext<Unit, ApplicationCall>) {
+        val processor = specifyProcessor(ctx)
+        val response = processor.execute()
+
+        val jsonResponse = JsonMapperImpl().toJson(response)
+        ctx.call.respondText(jsonResponse, ContentType.Application.Json, HttpStatusCode.OK)
+    }
+
+    suspend inline fun <reified Request : Any> readRequest(ctx: PipelineContext<Unit, ApplicationCall>): Request =
+            ctx.context.receive()
+    //return ctx.call.receiveText()
+
+    abstract suspend fun specifyProcessor(ctx: PipelineContext<Unit, ApplicationCall>): BaseProcessor<Response>
+}
+
+abstract class BaseProcessor<Response> {
+    abstract fun validate()
+    abstract suspend fun process(): Response
+    suspend fun execute(): Response {
+        validate()
+        return process()
     }
 }
 
-interface BaseHandler<RouteRequest, RouteResponse> {
-    suspend fun execute(): RouteResponse
+
+class ArticleListingHandler : BaseApiHandler<EmptyRequest, BanyanResponse>() {
+    override suspend fun specifyProcessor(ctx: PipelineContext<Unit, ApplicationCall>) =
+            ArticleListingProcessor(ArticleRepoImpl())
+}
+
+class UserListingHandler : BaseApiHandler<EmptyRequest, List<UserListingResponse>>() {
+    override suspend fun specifyProcessor(ctx: PipelineContext<Unit, ApplicationCall>) =
+            UserListingProcessor(UserRepoImpl())
+}
+
+class UserRegisteringHandler : BaseApiHandler<UserRegisterRequest, EmptyResponse>() {
+    override suspend fun specifyProcessor(ctx: PipelineContext<Unit, ApplicationCall>) =
+            UserRegisteringProcessor(readRequest(ctx), UserRepoImpl())
 }
 
 

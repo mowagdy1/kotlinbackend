@@ -29,12 +29,12 @@ fun Route.appRoutes() {
             else throw BadRequestException()
         }
 
-        post("register") {
-
-            val userRegisterRequest = call.receive<UserRegisterRequest>()
-
-            call.respond(HttpStatusCode.OK, UserService(UserRepoImpl()).register(userRegisterRequest))
-        }
+//        post("register") {
+//
+//            val userRegisterRequest = call.receive<UserRegisterRequest>()
+//
+//            call.respond(HttpStatusCode.OK, UserService(UserRepoImpl()).register(userRegisterRequest))
+//        }
 
         put("/{id}") {
 
