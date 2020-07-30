@@ -12,3 +12,4 @@ data class SingleUserResponse(
         val email: String
 )
 
+class EmptyResponse

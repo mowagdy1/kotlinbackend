@@ -7,7 +7,7 @@ import java.util.*
 
 private const val validityInMs = 36_000_00 * 10 // 10 hours
 
-class AuthTokenManagerJWT(private val secret: String = "zAP5MBA4B4Ijz0MZaS48", private val issuer: String = "mowagdy") : AuthTokenManager {
+class AuthTokenManagerJWT(private val secret: String = "zAP5MBA4B48zAP5MBA4B4Ijz0MZaBA4B4Ijz0MZaS48", private val issuer: String = "mowagdy") : AuthTokenManager {
 
     override fun generateToken(tokenParams: TokenParams): String = Jwts.builder()
             .setIssuer(issuer)
@@ -26,14 +26,13 @@ class AuthTokenManagerJWT(private val secret: String = "zAP5MBA4B4Ijz0MZaS48", p
             val jws = Jwts.parserBuilder()
                     .setSigningKey(Keys.hmacShaKeyFor(secret.toByteArray()))
                     .build()
-                    .parseClaimsJws(token);
+                    .parseClaimsJws(token)
 
             val roles: MutableList<String> = mutableListOf()
-            val rolesJws = jws.body[TokenParams::roles.name]
-            if (rolesJws is List<*>) {
-                rolesJws.forEach {
-                    if (it is String) roles += it
-                }
+            val rolesJws = jws.body[TokenParams::roles.name] as List<*>
+
+            rolesJws.forEach {
+                if (it is String) roles += it
             }
 
             return TokenParams(userId = jws.body[TokenParams::userId.name].toString(), roles = roles)
