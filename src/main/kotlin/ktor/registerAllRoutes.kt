@@ -1,9 +1,9 @@
 package ktor
 
 import commons.ApplicationRoutes
+import commons.RouteMethod
 import commons.SingleRoute
 import io.ktor.application.ApplicationCall
-import io.ktor.http.HttpMethod
 import io.ktor.util.pipeline.PipelineContext
 import modules.articles.ArticleListingProcessor
 import modules.articles.ArticleRepoImpl
@@ -12,10 +12,10 @@ import modules.user.*
 
 fun ApplicationRoutes.registerAllRoutes() {
 
-    registerRoute(SingleRoute(HttpMethod.Get, "p", ArticleListingHandler()))
+    registerRoute(SingleRoute(RouteMethod.GET, "p", ArticleListingHandler()))
 
-    registerRoute(SingleRoute(HttpMethod.Get, "users", UserListingHandler()))
-    registerRoute(SingleRoute(HttpMethod.Post, "users/register", UserRegisteringHandler()))
+    registerRoute(SingleRoute(RouteMethod.GET, "users", UserListingHandler()))
+    registerRoute(SingleRoute(RouteMethod.POST, "users/register", UserRegisteringHandler()))
 
 }
 

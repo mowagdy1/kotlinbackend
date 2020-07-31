@@ -6,7 +6,6 @@ import io.ktor.application.ApplicationCall
 import io.ktor.application.call
 import io.ktor.http.ContentType
 import io.ktor.http.HttpHeaders
-import io.ktor.http.HttpMethod
 import io.ktor.http.HttpStatusCode
 import io.ktor.request.header
 import io.ktor.request.receive
@@ -21,9 +20,10 @@ fun Route.resolveRoutes() {
         route(route.uri) {
 
             when (route.method) {
-                HttpMethod.Get -> get { handlingRequest(route, this) }
-                HttpMethod.Post -> post { handlingRequest(route, this) }
-                HttpMethod.Put -> put { handlingRequest(route, this) }
+                RouteMethod.GET -> get { handlingRequest(route, this) }
+                RouteMethod.POST -> post { handlingRequest(route, this) }
+                RouteMethod.PUT -> put { handlingRequest(route, this) }
+                RouteMethod.DELETE -> delete { handlingRequest(route, this) }
             }
 
             get {
