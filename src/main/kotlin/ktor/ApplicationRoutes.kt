@@ -1,7 +1,7 @@
 package ktor
 
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
-import commons.AuthTokenManagerJWT
+import commons.*
 import io.ktor.application.ApplicationCall
 import io.ktor.application.call
 import io.ktor.http.ContentType
@@ -14,20 +14,9 @@ import io.ktor.response.respond
 import io.ktor.response.respondText
 import io.ktor.routing.*
 import io.ktor.util.pipeline.PipelineContext
-import modules.articles.ArticleListingProcessor
-import modules.articles.ArticleRepoImpl
-import modules.user.*
-
-object ApplicationRoutes {
-    val routes: MutableList<SingleRoute> = mutableListOf()
-
-    fun registerRoute(endpoint: SingleRoute) {
-        routes.add(endpoint)
-    }
-}
 
 
-fun Route.applicationRoutes() {
+fun Route.resolveRoutes() {
     ApplicationRoutes.routes.forEach { route ->
         route(route.uri) {
 
@@ -62,32 +51,15 @@ private suspend fun PipelineContext<Unit, ApplicationCall>.handlingRequest(route
             if (!eligibleEndpoint) {
                 call.respond(HttpStatusCode.Forbidden, "Not have a permission")
             }
-
-            //ctx.call.respondText("", ContentType.Application.Json, HttpStatusCode.OK)
-            //call.respond(HttpStatusCode.OK, route.handler.handle(ctx))
             //route.handler.handle(ctx)
         } else {
             call.respond(HttpStatusCode.Unauthorized, "auth is required")
         }
     }
 
-    //call.respond(HttpStatusCode.OK, route.handler.execute()!!)
     route.handler.handle(ctx)
 }
 
-
-fun ApplicationRoutes.allRoutes() {
-
-    registerRoute(SingleRoute(HttpMethod.Get, "p", ArticleListingHandler()))
-
-    registerRoute(SingleRoute(HttpMethod.Get, "users", UserListingHandler()))
-    registerRoute(SingleRoute(HttpMethod.Post, "users/register", UserRegisteringHandler()))
-
-}
-
-interface JsonMapper {
-    fun <T> toJson(obj: T): String
-}
 
 class JsonMapperImpl : JsonMapper {
     private val mapper = jacksonObjectMapper()
@@ -95,15 +67,6 @@ class JsonMapperImpl : JsonMapper {
             mapper.writeValueAsString(obj)
 }
 
-interface BaseRouteHandler {
-    suspend fun handle(ctx: PipelineContext<Unit, ApplicationCall>)
-}
-
-open class SingleRoute(val method: HttpMethod,
-                       val uri: String,
-                       val handler: BaseRouteHandler,
-                       val auth: Boolean = false,
-                       val roles: List<String> = listOf())
 
 abstract class BaseApiHandler<Request, Response> : BaseRouteHandler {
     override suspend fun handle(ctx: PipelineContext<Unit, ApplicationCall>) {
@@ -116,39 +79,9 @@ abstract class BaseApiHandler<Request, Response> : BaseRouteHandler {
 
     suspend inline fun <reified Request : Any> readRequest(ctx: PipelineContext<Unit, ApplicationCall>): Request =
             ctx.context.receive()
-    //return ctx.call.receiveText()
 
     abstract suspend fun specifyProcessor(ctx: PipelineContext<Unit, ApplicationCall>): BaseProcessor<Response>
 }
-
-abstract class BaseProcessor<Response> {
-    abstract fun validate()
-    abstract suspend fun process(): Response
-    suspend fun execute(): Response {
-        validate()
-        return process()
-    }
-}
-
-
-class ArticleListingHandler : BaseApiHandler<EmptyRequest, BanyanResponse>() {
-    override suspend fun specifyProcessor(ctx: PipelineContext<Unit, ApplicationCall>) =
-            ArticleListingProcessor(ArticleRepoImpl())
-}
-
-class UserListingHandler : BaseApiHandler<EmptyRequest, List<UserListingResponse>>() {
-    override suspend fun specifyProcessor(ctx: PipelineContext<Unit, ApplicationCall>) =
-            UserListingProcessor(UserRepoImpl())
-}
-
-class UserRegisteringHandler : BaseApiHandler<UserRegisterRequest, EmptyResponse>() {
-    override suspend fun specifyProcessor(ctx: PipelineContext<Unit, ApplicationCall>) =
-            UserRegisteringProcessor(readRequest(ctx), UserRepoImpl())
-}
-
-
-data class BanyanRequest(val whatever: String = "")
-data class BanyanResponse(val whatever: String = "")
 
 
 private fun parseAuthorizationHeaderToToken(authHeader: String): String {

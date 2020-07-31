@@ -26,14 +26,11 @@ fun Application.module() {
         registerExceptions()
     }
     routing {
-
         //appRoutes()
-
         runBlocking {
-            ApplicationRoutes.allRoutes()
+            ApplicationRoutes.registerAllRoutes()
         }
-
-        applicationRoutes()
+        resolveRoutes()
     }
 }
 
@@ -42,19 +39,19 @@ fun main() {
 }
 
 fun StatusPages.Configuration.registerExceptions() {
-    exception<BadRequestException> { cause ->
+    exception<BadRequestException> {
         call.respond(HttpStatusCode.BadRequest)
     }
-    exception<UnauthorizedException> { cause ->
+    exception<UnauthorizedException> {
         call.respond(HttpStatusCode.Unauthorized)
     }
-    exception<ForbiddenException> { cause ->
+    exception<ForbiddenException> {
         call.respond(HttpStatusCode.Forbidden)
     }
-    exception<NotFoundException> { cause ->
+    exception<NotFoundException> {
         call.respond(HttpStatusCode.NotFound)
     }
-    exception<ConflictException> { cause ->
+    exception<ConflictException> {
         call.respond(HttpStatusCode.Conflict)
     }
 }

@@ -5,20 +5,18 @@ import commons.BadRequestException
 import commons.TokenParams
 import io.ktor.application.call
 import io.ktor.http.HttpHeaders
-import io.ktor.http.HttpMethod
 import io.ktor.http.HttpStatusCode
 import io.ktor.request.header
 import io.ktor.request.receive
 import io.ktor.response.respond
 import io.ktor.routing.*
-import modules.user.UserRegisterRequest
 import modules.user.UserRepoImpl
 import modules.user.UserService
 import modules.user.UserUpdateRequest
 
 fun Route.appRoutes() {
     route("/users") {
-//        get("") {
+        //        get("") {
 //            call.respond(HttpStatusCode.OK, UserService(UserRepoImpl()).list())
 //        }
 
@@ -53,18 +51,13 @@ fun Route.appRoutes() {
     post("validate-token") {
 
         val authHeader = call.request.header(HttpHeaders.Authorization)
-
         if (authHeader is String) {
 
             val parsed = parseAuthorizationHeaderToToken(authHeader)
-
             val authTokenManagerJWT = AuthTokenManagerJWT()
-
             val parsedToken = authTokenManagerJWT.parseToken(parsed)
 
-
             call.respond(HttpStatusCode.OK, parsedToken)
-
         }
 
         call.respond(HttpStatusCode.OK, "mfeesh")
@@ -75,7 +68,6 @@ fun Route.appRoutes() {
         val token = authTokenManagerJWT.generateToken(TokenParams("mo", listOf("Customer")))
         call.respond(HttpStatusCode.OK, token)
     }
-
 
 }
 

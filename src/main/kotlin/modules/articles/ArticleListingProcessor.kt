@@ -1,7 +1,6 @@
 package modules.articles
 
-import ktor.BanyanResponse
-import ktor.BaseProcessor
+import commons.BaseProcessor
 
 class ArticleListingProcessor(private val repo: ArticleRepoInterface) : BaseProcessor<BanyanResponse>() {
 
@@ -11,3 +10,5 @@ class ArticleListingProcessor(private val repo: ArticleRepoInterface) : BaseProc
         return BanyanResponse("Ay 7aga")
     }
 }
+
+data class BanyanResponse(val whatever: String = "")

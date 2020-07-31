@@ -1,6 +1,6 @@
 package modules.user
 
-import ktor.BaseProcessor
+import commons.BaseProcessor
 
 class UserRegisteringProcessor(private val request: UserRegisterRequest,
                                private val repo: UserRepoInterface) : BaseProcessor<EmptyResponse>() {

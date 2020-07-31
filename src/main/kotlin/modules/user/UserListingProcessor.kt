@@ -1,6 +1,6 @@
 package modules.user
 
-import ktor.BaseProcessor
+import commons.BaseProcessor
 
 class UserListingProcessor(private val repo: UserRepoInterface) : BaseProcessor<List<UserListingResponse>>() {
 
