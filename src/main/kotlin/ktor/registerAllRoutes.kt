@@ -1,8 +1,6 @@
 package ktor
 
-import commons.ApplicationRoutes
-import commons.RouteMethod
-import commons.SingleRoute
+import base.*
 import io.ktor.application.ApplicationCall
 import io.ktor.util.pipeline.PipelineContext
 import modules.articles.ArticleListingProcessor

@@ -1,4 +1,4 @@
-package commons
+package base
 
 interface AuthTokenManager {
     fun generateToken(tokenParams: TokenParams): String

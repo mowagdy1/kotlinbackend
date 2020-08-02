@@ -1,6 +1,6 @@
 package modules.articles
 
-import commons.BaseProcessor
+import base.BaseProcessor
 
 class ArticleListingProcessor(private val repo: ArticleRepoInterface) : BaseProcessor<BanyanResponse>() {
 

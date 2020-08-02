@@ -1,6 +1,6 @@
 package modules.user
 
-import commons.BaseProcessor
+import base.BaseProcessor
 
 class UserListingProcessor(private val repo: UserRepoInterface) : BaseProcessor<List<UserListingResponse>>() {
 

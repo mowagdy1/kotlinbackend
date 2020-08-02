@@ -1,6 +1,6 @@
 package modules.articles
 
-import commons.NotFoundException
+import base.NotFoundException
 import mongodb.MongoDb
 import org.litote.kmongo.eq
 import java.util.*

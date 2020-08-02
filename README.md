@@ -8,11 +8,14 @@ These instructions will get you a copy of the project up and running on your loc
 
 ### Prerequisites
 
-What things you need to install the software and how to install them
+* You need to have java installed on your system. You can get the Java from [here](http://www.oracle.com/technetwork/java/javase/downloads/index.html).
 
-```
-Give examples
-```
+* You also need to have MongoDB installed. Just download it as normal from [here](https://docs.mongodb.com/manual/installation/) or if you like using docker like me, pull mongodb from [here](https://hub.docker.com/_/mongo) then run:
+    ```
+    docker run -d -p 27017:27017 -v ~/data:/data/db mongo
+    ```
+
+* And sure you need an IDE. For me, the best one is [intellij IDEA](https://www.jetbrains.com/idea/download/). 
 
 ### Installing
 
@@ -32,26 +35,6 @@ until finished
 
 End with an example of getting some data out of the system or using it for a little demo
 
-## Running the tests
-
-Explain how to run the automated tests for this system
-
-### Break down into end to end tests
-
-Explain what these tests test and why
-
-```
-Give an example
-```
-
-### And coding style tests
-
-Explain what these tests test and why
-
-```
-Give an example
-```
-
 ## Deployment
 
 Add additional notes about how to deploy this on a live system
@@ -60,6 +43,7 @@ Add additional notes about how to deploy this on a live system
 
 * [Ktor](http://ktor.io/) - The backend framework used
 * [Gradle](https://gradle.org/) - Dependency Management
+* [MongoDB](http://mongodb.com/) - Document-oriented database
 
 ## Contributing
 

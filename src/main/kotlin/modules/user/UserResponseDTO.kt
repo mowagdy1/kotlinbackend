@@ -1,15 +1,13 @@
 package modules.user
 
 data class UserListingResponse(
-        val _id: String,
+        val _id: Long,
         val name: String,
         val email: String
 )
 
 data class SingleUserResponse(
-        val _id: String,
+        val _id: Long,
         val name: String,
         val email: String
 )
-
-class EmptyResponse

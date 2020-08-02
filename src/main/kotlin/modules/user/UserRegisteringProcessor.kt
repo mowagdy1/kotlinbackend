@@ -1,6 +1,8 @@
 package modules.user
 
-import commons.BaseProcessor
+import base.generateUniqueId
+import base.BaseProcessor
+import base.EmptyResponse
 
 class UserRegisteringProcessor(private val request: UserRegisterRequest,
                                private val repo: UserRepoInterface) : BaseProcessor<EmptyResponse>() {
@@ -8,8 +10,10 @@ class UserRegisteringProcessor(private val request: UserRegisterRequest,
     override fun validate() {}
 
     override suspend fun process(): EmptyResponse {
-        repo.insert(name = request.name, email = request.email)
-
+        repo.insert(User(_id = generateUniqueId(),
+                name = request.name,
+                email = request.email,
+                createdAt = System.currentTimeMillis()))
         return EmptyResponse()
     }
 

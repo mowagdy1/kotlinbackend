@@ -1,8 +1,7 @@
 package ktor
 
-import commons.AuthTokenManagerJWT
-import commons.BadRequestException
-import commons.TokenParams
+import base.BadRequestException
+import base.TokenParams
 import io.ktor.application.call
 import io.ktor.http.HttpHeaders
 import io.ktor.http.HttpStatusCode
@@ -23,7 +22,7 @@ fun Route.appRoutes() {
         get("/{id}") {
             val id: String? = call.parameters["id"]
             if (id != null)
-                call.respond(HttpStatusCode.OK, UserService(UserRepoImpl()).findById(id))
+                call.respond(HttpStatusCode.OK, UserService(UserRepoImpl()).findById(id.toLong()))
             else throw BadRequestException()
         }
 
@@ -40,7 +39,7 @@ fun Route.appRoutes() {
             val userUpdateRequest = call.receive<UserUpdateRequest>()
 
             if (id != null)
-                call.respond(HttpStatusCode.OK, UserService(UserRepoImpl()).update(userUpdateRequest, id))
+                call.respond(HttpStatusCode.OK, UserService(UserRepoImpl()).update(userUpdateRequest, id.toLong()))
             else throw BadRequestException()
         }
 
